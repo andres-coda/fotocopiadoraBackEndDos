@@ -115,7 +115,6 @@ export class StockService {
             const newEspecificaciones: Especificaciones[] = await this.especificacionesService.corroborarEspecificaciones({ especificaciones: datos.especificaciones }, queryRunner);
             const estado: EstadoPedido = await this.estadoService.getEstadoPedidoById(datos.estado.idEstadoPedido, queryRunner);
             const libro: Libro = await this.libroService.getLibroById(datos.libro.idLibro, queryRunner);
-            console.log(' en el crear stock');
             const nuevoStock = new Stock(
                 Number(datos.cantidad),
                 datos.estado,
@@ -246,8 +245,6 @@ export class StockService {
         try {
             const listaStockActual: Stock[] = await this.comprobarStock(idLibro, queryRunner);
             const listaStockDb: Stock[] = await this.getStockByLibro(idLibro, queryRunner);
-            console.log('Lista stock actual: '+listaStockActual.length);
-            console.log('Lista stock Db: '+listaStockDb.length);
             for (const stock of listaStockActual) {
                 const idsEspe: number[] = stock.especificaciones.map(esp => esp.idEspecificaciones)
                 const index = this.verificarStock(

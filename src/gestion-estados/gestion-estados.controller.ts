@@ -16,11 +16,6 @@ export class GestionEstadosController {
         errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number,
         @Body() dtoPedido:DtoPedidoEstado
     ):Promise<Pedido>{      
-      console.log(`Estoy en el Controladro de gestion-estados id: ${id}`);
-      console.log(dtoPedido);
-      
-      
-      
         return await this.gestionEstadoService.EstadoPedidoModificar(dtoPedido,id);
     }
     
