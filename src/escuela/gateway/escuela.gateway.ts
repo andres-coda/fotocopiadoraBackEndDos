@@ -12,7 +12,15 @@ import { Escuela } from '../entidad/escuela.entity';
     server: Server;
   
     // Método para emitir la actualización del curso a todos los clientes conectados
-    enviarActualizacionEscuela(msg:string, data?: Escuela) {
-      this.server.emit(msg, data); // Emite el evento 'cursoActualizado' a todos los clientes
+    enviarActualizacionEscuela(data: Escuela) {
+      this.server.emit('Se actualizo escuela', data); // Emite el evento 'cursoActualizado' a todos los clientes
+    }   
+
+    enviarCrearEscuela(data:Escuela){
+      this.server.emit('Se creo escuela', data);
+    }
+
+    enviarEliminarEscuela(data:Escuela){
+      this.server.emit('Se elimino escuela', data);
     }
   }

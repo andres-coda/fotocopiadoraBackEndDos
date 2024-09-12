@@ -3,10 +3,14 @@ import { FindOneOptions, Repository, UpdateResult } from 'typeorm';
 import { Precios } from './entidad/precios.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DtoPrecios } from './dto/DtoPrecios.dto';
+import { PreciosGateway } from './gateway/precios.gateway';
 
 @Injectable()
 export class PreciosService {
-    constructor(@InjectRepository(Precios) private readonly precioRepository: Repository<Precios>){}
+    constructor(
+        @InjectRepository(Precios) private readonly precioRepository: Repository<Precios>,
+        private readonly precioGateWay:PreciosGateway,
+    ){}
 
     async getPrecios(): Promise<Precios[]> {
         try {
@@ -33,8 +37,10 @@ export class PreciosService {
         try {
             const nuevoPrecio: Precios = await this.precioRepository.save(
                 new Precios(datos.tipo, datos.importe));
-            if (nuevoPrecio) return nuevoPrecio;
-            throw new NotFoundException(`No se pudo crear el precio`);
+            if (nuevoPrecio) {
+                this.precioGateWay.enviarCrearPrecio(nuevoPrecio);
+            }
+            return nuevoPrecio;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear el precio`);
         }
@@ -46,8 +52,11 @@ export class PreciosService {
             if (precioActualizar) {
                 precioActualizar.tipo = datos.tipo;
                 precioActualizar.importe = datos.importe;
-                precioActualizar = await this.precioRepository.save(precioActualizar);
-                return precioActualizar;
+                const precioActualizado:Precios = await  this.precioRepository.save(precioActualizar);
+                if (precioActualizado) {
+                    this.precioGateWay.enviarActualizacionPrecio(precioActualizado);
+                }
+                return precioActualizado;
             }
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar actualizar el precio con id ${id}`);

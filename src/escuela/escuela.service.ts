@@ -46,7 +46,7 @@ export class EscuelaService {
                 ? (entity: any) => queryRunner.manager.save(Escuela, entity) 
                 : (entity: any) => this.escuelaRepository.save(entity);
             const escuelaGuardada: Escuela = await saveMethod(newEscuela);
-            this.escuelaGateway.enviarActualizacionEscuela('escuela creada',escuelaGuardada);
+            this.escuelaGateway.enviarCrearEscuela(escuelaGuardada);
             return escuelaGuardada;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear la escuela ${datos.nombre}`);
@@ -65,7 +65,7 @@ export class EscuelaService {
                 ? (entity: any) => queryRunner.manager.save(Escuela, entity) 
                 : (entity: any) => this.escuelaRepository.save(entity);
                 const escuelaGuardada: Escuela = await saveMethod(escuelaActualizar);
-                this.escuelaGateway.enviarActualizacionEscuela('escuela actualizada',escuelaGuardada);
+                this.escuelaGateway.enviarActualizacionEscuela(escuelaGuardada);
                 return escuelaGuardada;
             }
         } catch (error) {
@@ -78,7 +78,7 @@ export class EscuelaService {
             const escuelaEliminar: Escuela = await this.getEscuelaById(id);
             if (escuelaEliminar) {
                 await this.escuelaRepository.remove(escuelaEliminar);
-                this.escuelaGateway.enviarActualizacionEscuela('escuela eliminada', escuelaEliminar);
+                this.escuelaGateway.enviarEliminarEscuela(escuelaEliminar);
                 return true;
             }
         } catch (error) {

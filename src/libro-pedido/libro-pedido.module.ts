@@ -14,6 +14,7 @@ import { EspecificacionesModule } from 'src/especificaciones/especificaciones.mo
 import { LibroModule } from 'src/libro/libro.module';
 import { PersonaModule } from 'src/persona/persona.module';
 import { LibroPedidoGateway } from './gateway/libroPedido.gateway';
+import { PersonaGateway } from 'src/persona/gateway/persona.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([LibroPedido, Libro, Pedido, Especificaciones, EstadoPedido]),
@@ -25,7 +26,7 @@ import { LibroPedidoGateway } from './gateway/libroPedido.gateway';
   forwardRef(() => PersonaModule),
 ],
   controllers: [LibroPedidoController],
-  providers: [LibroPedidoService, LibroPedidoGateway],
+  providers: [LibroPedidoService, LibroPedidoGateway, PersonaGateway],
   exports: [LibroPedidoService]
 })
 export class LibroPedidoModule {}

@@ -11,10 +11,18 @@ import { Libro } from '../entidad/libro.entity';
   export class LibroGateway {
     @WebSocketServer()
     server: Server;
+
+     onModuleInit() {
+    this.server.setMaxListeners(20); // Aumentar el límite a 20 listeners, o el número que consideres adecuado.
+  }
   
     // Método para emitir la actualización del curso a todos los clientes conectados
-    enviarActualizacionLibro(msg: string, data: Libro) {
-      this.server.emit(msg, data); // Emite el evento 'cursoActualizado' a todos los clientes
+    enviarActualizacionLibro( data: Libro) {
+      this.server.emit('Se actualizo libro', data); // Emite el evento 'cursoActualizado' a todos los clientes
+    }
+
+    enviarCrearLibro( data: Libro) {
+      this.server.emit('Se creo libro', data); // Emite el evento 'cursoActualizado' a todos los clientes
     }
   }
   

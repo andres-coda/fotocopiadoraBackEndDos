@@ -4,10 +4,14 @@ import { FindManyOptions, FindOneOptions, In, QueryRunner, Repository, UpdateRes
 import { DtoPersona } from './dto/personaDto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DtoArrayPersona } from './dto/DtoArrayPersona.dto';
+import { PersonaGateway } from './gateway/persona.gateway';
 
 @Injectable()
 export class PersonaService {
-    constructor(@InjectRepository(Persona) private readonly personaRepository: Repository<Persona>) {}
+    constructor(
+        @InjectRepository(Persona) private readonly personaRepository: Repository<Persona>,
+        private readonly personaGateway:PersonaGateway,
+    ) {}
 
     async getPersonasCompleto(): Promise<Persona[]> {
         try {
@@ -25,8 +29,17 @@ export class PersonaService {
                 }
             };
             const personas: Persona[] = await this.personaRepository.find(criterio);
-            if (personas) return personas;
-            throw new NotFoundException(`No hay personas registradas en la base de datos`);
+            if (!personas)  throw new NotFoundException(`No hay personas registradas en la base de datos`);
+
+            const personasFiltradas:Persona[]= personas.map(persona=>{
+                persona.pedidos=persona.pedidos.filter(pedido=>{
+                    const tieneTodosEstados5 = pedido.librosPedidos.every(libroPedido => libroPedido.estadoPedido.idEstadoPedido === 5);
+                    return !tieneTodosEstados5;
+                });
+                return persona;
+            })
+            return personasFiltradas;
+            
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar leer las personas`);
         }
@@ -65,7 +78,14 @@ export class PersonaService {
 
     async getPersonaById(id: number): Promise<Persona> {
         try {
-            const criterio: FindOneOptions = { relations: ['profeMaterias.curso', 'pedidos.librosPedidos.libro'], where: { idPersona: id } };
+            const criterio: FindOneOptions = { 
+                relations: [
+                    'profeMaterias.curso', 
+                    'pedidos.librosPedidos.libro',
+                    'pedidos.librosPedidos.estadoPedido'
+                ],
+                where: { idPersona: id } 
+            };
             const persona: Persona = await this.personaRepository.findOne(criterio);
             if (persona) return persona;
             throw new NotFoundException(`No se encontró la persona con el id ${id}`);
@@ -103,21 +123,29 @@ export class PersonaService {
             const personaGuardada: Persona = queryRunner 
                 ? await queryRunner.manager.save(Persona, nuevaPersona)
                 : await this.personaRepository.save(nuevaPersona);
+            if (personaGuardada){
+                this.personaGateway.enviarCrearPersona(personaGuardada);
+            }
             return personaGuardada;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear la persona`);
         }
     }
 
-    async actualizarPersona(id: number, datos: DtoPersona): Promise<Persona> {
+    async actualizarPersona(id: number, datos: DtoPersona, queryRunner?:QueryRunner): Promise<Persona> {
         try {
             let personaActualizar: Persona = await this.getPersonaById(id);
             if (personaActualizar) {
                 personaActualizar.nombre = datos.nombre;
                 personaActualizar.celular = datos.celular;
                 personaActualizar.email = datos.email;
-                personaActualizar = await this.personaRepository.save(personaActualizar);
-                return personaActualizar;
+                const personaGuardada: Persona = queryRunner 
+                    ? await queryRunner.manager.save(Persona, personaActualizar)
+                    : await this.personaRepository.save(personaActualizar);
+                if (personaGuardada){
+                    this.personaGateway.enviarActualizacionPersona(personaGuardada);
+                }
+                return personaGuardada;
             }
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar actualizar la persona con id ${id}`);
@@ -196,6 +224,11 @@ export class PersonaService {
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear el pedido del libro`);
         }
+    }
+    
+    async enviarPersona(idPersona:number){
+        const persona:Persona = await this.getPersonaById(idPersona);
+        this.personaGateway.enviarActualizacionPersona(persona);
     }
 
     private handleExceptions(error: any, customMessage: string): never {

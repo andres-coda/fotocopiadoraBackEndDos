@@ -73,7 +73,7 @@ export class LibroService {
             const libroGuardado: Libro = queryRunner 
                 ? await queryRunner.manager.save(Libro, nuevoLibro)
                 : await this.libroRepository.save(nuevoLibro);
-            this.libroGateway.enviarActualizacionLibro('Se creo el libro', libroGuardado);
+            this.libroGateway.enviarCrearLibro(libroGuardado);
             return libroGuardado;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear el libro ${datos.nombre}`);
@@ -95,7 +95,7 @@ export class LibroService {
             const libroActualizado: Libro = queryRunner 
                 ? await queryRunner.manager.save(Libro, libroActualizar)
                 : await this.libroRepository.save(libroActualizar);
-            this.libroGateway.enviarActualizacionLibro('Se creo el libro', libroActualizado);
+            this.libroGateway.enviarActualizacionLibro(libroActualizado);
             return libroActualizado;            
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar actualizar el libro ${datos.nombre}`);
@@ -211,6 +211,18 @@ export class LibroService {
             const todasEstanPresentes = libros.length === datos.libros.length;
             if (todasEstanPresentes) return libros
             throw new NotFoundException('No se encontraron los libros proporcionadas.')
+        }catch (error) {
+            throw this.handleExceptions(error, `Error al corroborar los libros`);
+        }
+    }
+
+    async enviarLibrosActualizados(datos:DtoLibroArray){
+        try{
+            for(const libro of datos.libros){
+                const libroActualizado:Libro = await this.getLibroById(libro.idLibro);
+                if (!libroActualizado) throw new NotFoundException(`No se pudo encontrar el libro ${libro.idLibro} para actualizarlo`)
+                this.libroGateway.enviarActualizacionLibro(libroActualizado);
+            }
         }catch (error) {
             throw this.handleExceptions(error, `Error al corroborar los libros`);
         }

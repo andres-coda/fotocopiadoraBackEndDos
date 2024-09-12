@@ -17,6 +17,7 @@ import { EstadoPedidoService } from 'src/estado-pedido/estado-pedido.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DtoLibroEstado } from 'src/stock/dto/DtoLibroEstado.dto';
 import { LibroPedidoGateway } from './gateway/libroPedido.gateway';
+import { PersonaGateway } from 'src/persona/gateway/persona.gateway';
 
 @Injectable()
 export class LibroPedidoService {
@@ -30,6 +31,7 @@ export class LibroPedidoService {
         private readonly libroService: LibroService,
         private readonly personaService: PersonaService,
         private readonly libroPedidoGateway: LibroPedidoGateway,
+        private readonly personaGateway: PersonaGateway,
      ) {}
 
     async getLibrosPedidos(): Promise<LibroPedido[]> {
@@ -261,9 +263,10 @@ export class LibroPedidoService {
             }
             const pedidoCargado = await this.pedidoService.getPedidoById(nuevoPedido.idPedido, queryRunner);
             if (pedidoCargado) {
-                const librosActualizados:Libro[] = await this.libroService.corroboracionLibro(pedidoCompleto);
                 const clienteActualizado:Persona = await this.personaService.getPersonaById(cliente.idPersona);
-                this.libroPedidoGateway.enviarActualizacionLibro('pedido cargado', clienteActualizado, librosActualizados, pedidoCargado)
+                await this.libroService.enviarLibrosActualizados({libros:libros});
+                this.personaGateway.enviarActualizacionPersona(clienteActualizado);                
+                this.libroPedidoGateway.enviarCrearPedido(pedidoCargado);
                 await queryRunner.commitTransaction();
                 return pedidoCargado;
             }

@@ -4,11 +4,13 @@ import { Materia } from './entidad/materia.entity';
 import { DtoArrayMateria } from './dto/DtoArrayMateria.dto';
 import { DtoMateria } from './dto/DtoMateria.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { MateriaGateway } from './gateway/materia.gateway';
 
 @Injectable()
 export class MateriaService {
     constructor(
         @InjectRepository(Materia) private readonly materiaRepository: Repository<Materia>,
+        private readonly materiaGateway:MateriaGateway,
     ) {}
 
     async getMaterias(): Promise<Materia[]> {
@@ -76,19 +78,27 @@ export class MateriaService {
             const materiaGuardada: Materia = queryRunner 
                 ? await queryRunner.manager.save(Materia, nuevaMateria)
                 : await this.materiaRepository.save(nuevaMateria);
+            if(materiaGuardada){
+                this.materiaGateway.enviarCrearMateria(materiaGuardada);
+            }
             return materiaGuardada;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear la materia con nombre ${datos.nombre}`);
         }
     }
 
-    async actualizarMateria(id: number, datos: DtoMateria): Promise<Materia> {
+    async actualizarMateria(id: number, datos: DtoMateria, queryRunner?:QueryRunner): Promise<Materia> {
         try {
             let materiaActualizar: Materia = await this.getMateriaById(id);
             if (materiaActualizar) {
                 materiaActualizar.nombre = datos.nombre;
-                materiaActualizar = await this.materiaRepository.save(materiaActualizar);
-                return materiaActualizar;
+                const materiaGuardada: Materia = queryRunner 
+                    ? await queryRunner.manager.save(Materia, materiaActualizar)
+                    : await this.materiaRepository.save(materiaActualizar);
+                if(materiaGuardada){
+                    this.materiaGateway.enviarActualizacionMateria(materiaGuardada);
+                }
+                return materiaGuardada;
             }
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar actualizar la materia con id ${id}`);

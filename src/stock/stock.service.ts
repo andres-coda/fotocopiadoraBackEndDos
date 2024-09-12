@@ -11,6 +11,7 @@ import { Especificaciones } from 'src/especificaciones/entidad/especificaciones.
 import { EstadoPedido } from 'src/estado-pedido/entidad/estadoPedido.entity';
 import { Libro } from 'src/libro/entidad/libro.entity';
 import { DtoLibroPedido } from 'src/libro-pedido/dto/DtoLibroPedido.dto';
+import { LibroGateway } from 'src/libro/gateway/libro.gateway';
 
 @Injectable()
 export class StockService {
@@ -19,7 +20,6 @@ export class StockService {
         private readonly especificacionesService: EspecificacionesService,
         private readonly libroService: LibroService,
         private readonly estadoService: EstadoPedidoService,
-        @InjectDataSource() private dataSource: DataSource,
     ) { }
 
     async getStock(): Promise<Stock[]> {
@@ -117,8 +117,8 @@ export class StockService {
             const libro: Libro = await this.libroService.getLibroById(datos.libro.idLibro, queryRunner);
             const nuevoStock = new Stock(
                 Number(datos.cantidad),
-                datos.estado,
-                datos.libro,
+                estado,
+                libro,
                 newEspecificaciones,
             );
             const stockGuardar: Stock = queryRunner

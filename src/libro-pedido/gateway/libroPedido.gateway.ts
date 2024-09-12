@@ -16,8 +16,12 @@ import { Pedido } from 'src/pedido/entidad/pedido.entity';
     server: Server;
   
     // Método para emitir la actualización del curso a todos los clientes conectados
-    enviarActualizacionLibro(msg: string, cliente: Persona, libros:Libro[], pedido : Pedido) {
-      this.server.emit(msg, cliente, libros, pedido); // Emite el evento 'cursoActualizado' a todos los clientes
+    enviarActualizacionPedido(pedido : Pedido) {
+      this.server.emit('Se actualizo pedido', pedido); // Emite el evento 'cursoActualizado' a todos los clientes
+    }
+
+    enviarCrearPedido(pedido : Pedido) {
+      this.server.emit('Se creo pedido', pedido); // Emite el evento 'cursoActualizado' a todos los clientes
     }
   }
   

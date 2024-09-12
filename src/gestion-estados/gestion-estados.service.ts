@@ -2,9 +2,12 @@ import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundExcep
 import { LibroPedido } from 'src/libro-pedido/entidad/libroPedido.entity';
 import { LibroPedidoService } from 'src/libro-pedido/libro-pedido.service';
 import { Libro } from 'src/libro/entidad/libro.entity';
+import { LibroService } from 'src/libro/libro.service';
 import { DtoPedidoEstado } from 'src/pedido/dto/DtoPedidoEstado';
 import { DtoPedidoReturn } from 'src/pedido/dto/DtoPedidoReturn.dto';
 import { PedidoService } from 'src/pedido/pedido.service';
+import { PersonaGateway } from 'src/persona/gateway/persona.gateway';
+import { PersonaService } from 'src/persona/persona.service';
 import { DtoLibroEstado } from 'src/stock/dto/DtoLibroEstado.dto';
 import { Stock } from 'src/stock/entidad/stock.entity';
 import { StockService } from 'src/stock/stock.service';
@@ -17,8 +20,9 @@ export class GestionEstadosService {
         private readonly pedidoService:PedidoService,
         private readonly libroPedidoService: LibroPedidoService,
         private readonly stockService: StockService,
+        private readonly libroService:LibroService,
+        private readonly personaService:PersonaService
     ){}
-    
     async EstadoPedidoModificar(dtoLibrosPedido:DtoPedidoEstado, idPedido:number):Promise<DtoPedidoReturn>{
         const queryRunner:QueryRunner = this.dataSource.createQueryRunner(); // Crear un queryRunner
         await queryRunner.connect(); // Conectar el queryRunner
@@ -33,12 +37,15 @@ export class GestionEstadosService {
                     throw new NotFoundException(`No se pudo modificar el estado del libro con id ${libroP.idLibroPedido}`);
                 }  else {
                     const libroStock: Libro = await this.stockService.compararStocks(libroP.libro.idLibro, queryRunner); 
-                    if (!libroStock) throw new NotFoundException(`No se pudo actualizar el libro stock ${libroP.libro.idLibro}`)
+                    if (!libroStock) throw new NotFoundException(`No se pudo actualizar el libro stock ${libroP.libro.idLibro}`);
                 }                                     
             }
             const nuevoPedido:DtoPedidoReturn = await this.pedidoService.getPedidoById(idPedido, queryRunner);
             if(nuevoPedido) {
                 await queryRunner.commitTransaction();
+                const libros: Libro[] = nuevoPedido.librosPedidos.map(lp=> lp.libro);
+                this.libroService.enviarLibrosActualizados({libros:libros});
+                this.personaService.enviarPersona(nuevoPedido.cliente.idPersona);                
                 return nuevoPedido;
             }
         } catch ( error) {
