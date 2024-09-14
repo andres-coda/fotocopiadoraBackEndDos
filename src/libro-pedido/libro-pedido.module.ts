@@ -15,6 +15,7 @@ import { LibroModule } from 'src/libro/libro.module';
 import { PersonaModule } from 'src/persona/persona.module';
 import { LibroPedidoGateway } from './gateway/libroPedido.gateway';
 import { PersonaGateway } from 'src/persona/gateway/persona.gateway';
+import { PedidoGateway } from 'src/pedido/gateway/pedido.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([LibroPedido, Libro, Pedido, Especificaciones, EstadoPedido]),

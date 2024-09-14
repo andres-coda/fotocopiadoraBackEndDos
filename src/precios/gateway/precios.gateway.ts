@@ -11,7 +11,9 @@ import { Precios } from '../entidad/precios.entity';
   export class PreciosGateway {
     @WebSocketServer()
     server: Server;
-  
+    onModuleInit() {
+      this.server.setMaxListeners(20); // Aumentar el límite a 20 listeners, o el número que consideres adecuado.
+    }
     // Método para emitir la actualización del curso a todos los clientes conectados
     enviarActualizacionPrecio(data: Precios) {
       this.server.emit('Se actualizo precio', data); // Emite el evento 'cursoActualizado' a todos los clientes

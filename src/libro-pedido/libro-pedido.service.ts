@@ -18,6 +18,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DtoLibroEstado } from 'src/stock/dto/DtoLibroEstado.dto';
 import { LibroPedidoGateway } from './gateway/libroPedido.gateway';
 import { PersonaGateway } from 'src/persona/gateway/persona.gateway';
+import { PedidoGateway } from 'src/pedido/gateway/pedido.gateway';
 
 @Injectable()
 export class LibroPedidoService {
@@ -165,8 +166,11 @@ export class LibroPedidoService {
             if (!stock) throw new NotFoundException(`No se pudo crear el stock`);
             const libroPedidoGuardado: LibroPedido = queryRunner 
                 ? await queryRunner.manager.save(LibroPedido, nuevoLibroPedido)
-                : await this.libroPedidoRepository.save(nuevoLibroPedido);    
-            return libroPedidoGuardado; 
+                : await this.libroPedidoRepository.save(nuevoLibroPedido); 
+            if(libroPedidoGuardado) {
+                this.libroPedidoGateway.enviarCrearPedido(libroPedidoGuardado)
+                return libroPedidoGuardado; 
+            }   
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar crear el libro pedido con extras ${datos.extras}`);
         }
@@ -265,8 +269,7 @@ export class LibroPedidoService {
             if (pedidoCargado) {
                 const clienteActualizado:Persona = await this.personaService.getPersonaById(cliente.idPersona);
                 await this.libroService.enviarLibrosActualizados({libros:libros});
-                this.personaGateway.enviarActualizacionPersona(clienteActualizado);                
-                this.libroPedidoGateway.enviarCrearPedido(pedidoCargado);
+                this.personaGateway.enviarActualizacionPersona(clienteActualizado);      
                 await queryRunner.commitTransaction();
                 return pedidoCargado;
             }

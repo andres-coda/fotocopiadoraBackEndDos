@@ -11,7 +11,9 @@ import { Persona } from '../entidad/persona.entity';
   export class PersonaGateway {
     @WebSocketServer()
     server: Server;
-  
+    onModuleInit() {
+      this.server.setMaxListeners(20); // Aumentar el límite a 20 listeners, o el número que consideres adecuado.
+    }
     // Método para emitir la actualización del curso a todos los clientes conectados
     enviarActualizacionPersona(data: Persona) {
       this.server.emit('Se actualizo persona', data); // Emite el evento 'cursoActualizado' a todos los clientes
