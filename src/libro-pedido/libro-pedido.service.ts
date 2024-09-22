@@ -49,7 +49,7 @@ export class LibroPedidoService {
     async getLibroPedidoById(id: number, queryRunner?:QueryRunner): Promise<LibroPedido | null> {
         try {
             const criterio: FindOneOptions = { 
-                relations: ['libro', 'pedido', 'especificaciones', 'estadoPedido'], 
+                relations: ['libro', 'pedido.cliente', 'especificaciones', 'estadoPedido'], 
                 where: { idLibroPedido: id } 
             };
             const libroPedido: LibroPedido = queryRunner 
@@ -239,7 +239,11 @@ export class LibroPedidoService {
             const newLibroPedido:LibroPedido = queryRunner
                 ? await queryRunner.manager.save(libroPedido)
                 : await this.libroPedidoRepository.save(libroPedido);
-            return newLibroPedido;         
+            if (newLibroPedido) {
+                //const newLibroP:LibroPedido = await this.getLibroPedidoById(newLibroPedido.idLibroPedido);
+                this.libroPedidoGateway.enviarActualizacionPedido(newLibroPedido)
+                return newLibroPedido;         
+            }
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar actualizar el estado libro pedido con id ${id}`);
         }

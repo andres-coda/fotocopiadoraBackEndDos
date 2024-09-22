@@ -58,6 +58,7 @@ export class MateriaService {
     }
 
     async getMateriaByNombre(nombre:string):Promise<Materia> {
+        console.log('metodo: getMateriaByNombre()');
         try{
             const criterio: FindOneOptions = { where: { nombre: nombre } };
             const materia: Materia = await this.materiaRepository.findOne(criterio);

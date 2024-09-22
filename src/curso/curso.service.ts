@@ -1,5 +1,5 @@
 import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Curso } from './entidad/curso.entity';
 import { DataSource, FindManyOptions, FindOneOptions, In, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import { EscuelaService } from 'src/escuela/escuela.service';
@@ -15,7 +15,7 @@ import { DtoProfeMateria } from 'src/profe-materia/dto/DtoProfeMateria.dto';
 export class CursoService {
   constructor(
     @InjectRepository(Curso) private readonly cursoRepository: Repository<Curso>,
-    private readonly dataSource: DataSource,
+    @InjectDataSource() private dataSource: DataSource,
     private readonly cursosGateway: CursosGateway,
     private readonly escuelaService: EscuelaService,
     private readonly profeMateriaService: ProfeMateriaService,
@@ -68,18 +68,18 @@ export class CursoService {
   } 
 
   async crearCurso(datos: DtoCurso, queryRunner?:QueryRunner): Promise<Curso> {
+    console.log('metodo: crearCurso()');
+    
     try {
       const escuela: Escuela = await this.escuelaService.getEscuelaById(datos.escuela.idEscuela);
       if (!escuela) throw new NotFoundException(`Escuela no encontrada ${datos.escuela.idEscuela}`);
       const nuevoCurso: Curso = new Curso(datos.anio, datos.grado, escuela);
-      if (queryRunner) {
-        const cursoGuardado = await queryRunner.manager.save(Curso, nuevoCurso);
+      const cursoGuardado: Curso = queryRunner 
+                ? await queryRunner.manager.save(Curso, nuevoCurso)
+                : await this.cursoRepository.save(nuevoCurso); 
+      if (cursoGuardado) {
         this.cursosGateway.enviarActualizacionCurso('curso creado',cursoGuardado);
         return cursoGuardado;      
-      } else {   
-        const cursoGuardado = await this.cursoRepository.save(nuevoCurso);
-        this.cursosGateway.enviarActualizacionCurso('curso creado',cursoGuardado);
-        return cursoGuardado;
       }
     } catch (error) {
       throw this.handleExceptions(error, `Error al intentar crear el curso ${datos.grado} en la base de datos; ${error}`);
@@ -158,20 +158,30 @@ export class CursoService {
       const curso: Curso = await this.getCursoById(id);
       curso.profeMaterias = curso.profeMaterias.filter(profe => profe.idProfeMateria !== datos.idProfeMateria);
       const cursoActualizado = await this.cursoRepository.save(curso);
-      return cursoActualizado;
+      if(cursoActualizado) {
+        this.cursosGateway.enviarActualizacionCurso('se actualizo curso', cursoActualizado);
+        return cursoActualizado;
+      }
     } catch (error) {
       throw this.handleExceptions(error, `Error al quitar profeMateria del curso con id ${id}`);
     }
   }
 
 
-  private async agregarProfeMateriaCurso(dtoCurso: Curso, dtoProfeMateria: ProfeMateria): Promise<Curso> {
+  private async agregarProfeMateriaCurso(dtoCurso: Curso, dtoProfeMateria: ProfeMateria, queryRunner?:QueryRunner): Promise<Curso> {
+    console.log('metodo: agregarProfeMateriaCurso()');
+    
     try {
       const newProfes: ProfeMateria[] = Array.isArray(dtoCurso.profeMaterias) ? [...dtoCurso.profeMaterias] : [];
       newProfes.push(dtoProfeMateria);
       const newCurso: Curso = { ...dtoCurso, profeMaterias: newProfes }
-      const cursoActualizado: Curso = await this.cursoRepository.save(newCurso);
-      if (cursoActualizado) return cursoActualizado;
+      const cursoActualizado: Curso = queryRunner 
+                ? await queryRunner.manager.save(Curso, newCurso)
+                : await this.cursoRepository.save(newCurso); 
+      if (cursoActualizado) {
+        this.cursosGateway.enviarActualizacionCurso('curso creado',cursoActualizado);
+        return cursoActualizado;      
+      }
     } catch (error) {
       throw this.handleExceptions(error, `Error al agregar profesor y materia al curso`);
     }
@@ -191,6 +201,7 @@ export class CursoService {
   }
 
   private async validarCurso(dtoCurso: DtoCurso, queryRunner?:QueryRunner): Promise<Curso> {
+    console.log('metodo: validarCurso()');
     try {
       let curso: Curso = await this.getCursoByData(dtoCurso);
       if (!curso) {
@@ -215,8 +226,9 @@ export class CursoService {
       if (curso.profeMaterias && curso.profeMaterias.length > 0 && curso.profeMaterias.some(pm => pm.idProfeMateria === profeMateria.idProfeMateria)) {
         return curso;
       }
-      const newCurso: Curso = await this.agregarProfeMateriaCurso(curso, profeMateria);
+      const newCurso: Curso = await this.agregarProfeMateriaCurso(curso, profeMateria, queryRunner);
       if (newCurso) {
+        this.cursosGateway.enviarActualizacionCurso('se actualizo curso', newCurso);
         await queryRunner.commitTransaction();
         return newCurso;
       }

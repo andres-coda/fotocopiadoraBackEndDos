@@ -69,8 +69,9 @@ export class ProfeMateriaService {
   }
 
   async crearProfeMateriaCompleto(dtoProfeMateria: DtoProfeMateria, queryRunner?:QueryRunner): Promise<ProfeMateria> {
+    console.log('crearProfeMateriaCompleto()');    
     try {
-      let profe: Persona = await this.personaService.getPersonaByData(dtoProfeMateria.profesor);
+      let profe: Persona = await this.personaService.getPersonaByData(dtoProfeMateria.profesor, queryRunner);
       if (!profe) {
         profe = await this.personaService.crearPersona(dtoProfeMateria.profesor, queryRunner);
       }
@@ -82,6 +83,7 @@ export class ProfeMateriaService {
         const newDto: DtoProfeMateria = { ...dtoProfeMateria, profesor: profe, materia: materia }
         const profeMateria = new ProfeMateria(profe, materia);
         if (queryRunner) {
+          console.log('guardando profe materia');
           return await queryRunner.manager.save(profeMateria)
         } else {
           return await this.profeMateriaRepository.save(profeMateria);
