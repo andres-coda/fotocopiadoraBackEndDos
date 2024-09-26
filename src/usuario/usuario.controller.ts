@@ -49,7 +49,7 @@ async eliminarUsuario(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpS
 
 @Patch(':id')
 @UseGuards(AdminGuard)
-async cambairRole(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() role: DtoRole): Promise<Boolean> {
+async cambairRole(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() role: DtoRole): Promise<Usuario> {
     return await this.usuariosService.cambiarRole(id,role);
 }
 }

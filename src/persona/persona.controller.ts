@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Patch, Param, Body, Delete, HttpCode, HttpStatus, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Param, Body, Delete, HttpCode, HttpStatus, ParseIntPipe, UseGuards, NotFoundException } from '@nestjs/common';
 import { PersonaService } from './persona.service';
 import { Persona } from './entidad/persona.entity';
 import { DtoPersona } from './dto/personaDto.dto';
 import { AdminGuard } from 'src/auth/guard/admin.guard';
+import { NotFoundError } from 'rxjs';
 
 @Controller('persona')
 export class PersonaController {
@@ -17,7 +18,9 @@ export class PersonaController {
     @Get(':id')
     @HttpCode(200)
     async getPersonaById(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number): Promise<Persona> {
-      return await this.personaService.getPersonaById(id);
+      const persona: Persona = await this.personaService.getPersonaById(id);
+      if (!persona) throw new NotFoundException('No se encontro ninguna persona con el id '+id);
+      return persona;
     }
   
     @Post()

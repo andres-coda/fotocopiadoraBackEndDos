@@ -20,12 +20,11 @@ export class UsuarioService {
         }
     }
 
-    async getUsuarioById(id: number): Promise<Usuario> {
+    async getUsuarioById(id: number): Promise<Usuario|null> {
         try {
             const criterio: FindOneOptions = { where: { idUsuario: id } };
             const usuario: Usuario = await this.usuarioRepository.findOne(criterio);
-            if (usuario) return usuario;
-            throw new NotFoundException(`No se encontró el usuario con el id ${id}`);
+            return usuario||null;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar leer el usuario ${id}`);
         }
@@ -85,14 +84,13 @@ export class UsuarioService {
         }
     }
 
-    async cambiarRole(id:number, role:DtoRole):Promise<Boolean>{
+    async cambiarRole(id:number, role:DtoRole):Promise<Usuario>{
         try {
             const usuario: Usuario = await this.getUsuarioById(id);
-            if(usuario) {
-                usuario.role=role.role;
-                const usuarioActualizado= await this.usuarioRepository.save(usuario);
-                return true;  
-            }
+            if(!usuario) throw new NotFoundException(`No se encontró el usuario con el id ${id}`);
+            usuario.role=role.role;
+            const usuarioActualizado= await this.usuarioRepository.save(usuario);
+            return usuarioActualizado;  
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar cambiar el rol al usuario con id ${id}`);
         }

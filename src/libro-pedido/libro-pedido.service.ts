@@ -273,7 +273,9 @@ export class LibroPedidoService {
             if (pedidoCargado) {
                 const clienteActualizado:Persona = await this.personaService.getPersonaById(cliente.idPersona);
                 await this.libroService.enviarLibrosActualizados({libros:libros});
-                this.personaGateway.enviarActualizacionPersona(clienteActualizado);      
+                if (clienteActualizado) {
+                    this.personaGateway.enviarActualizacionPersona(clienteActualizado);      
+                }
                 await queryRunner.commitTransaction();
                 return pedidoCargado;
             }

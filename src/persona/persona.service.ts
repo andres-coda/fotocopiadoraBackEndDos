@@ -76,7 +76,7 @@ export class PersonaService {
         }
     }
 
-    async getPersonaById(id: number): Promise<Persona> {
+    async getPersonaById(id: number): Promise<Persona|null> {
         try {
             const criterio: FindOneOptions = { 
                 relations: [
@@ -87,8 +87,7 @@ export class PersonaService {
                 where: { idPersona: id } 
             };
             const persona: Persona = await this.personaRepository.findOne(criterio);
-            if (persona) return persona;
-            throw new NotFoundException(`No se encontró la persona con el id ${id}`);
+            return persona ||null;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar leer la persona ${id}`);
         }
