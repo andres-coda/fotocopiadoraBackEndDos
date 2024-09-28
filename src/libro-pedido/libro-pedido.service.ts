@@ -271,12 +271,12 @@ export class LibroPedidoService {
             }
             const pedidoCargado = await this.pedidoService.getPedidoById(nuevoPedido.idPedido, queryRunner);
             if (pedidoCargado) {
+                await queryRunner.commitTransaction();
                 const clienteActualizado:Persona = await this.personaService.getPersonaById(cliente.idPersona);
                 await this.libroService.enviarLibrosActualizados({libros:libros});
                 if (clienteActualizado) {
                     this.personaGateway.enviarActualizacionPersona(clienteActualizado);      
                 }
-                await queryRunner.commitTransaction();
                 return pedidoCargado;
             }
         } catch (error) {   

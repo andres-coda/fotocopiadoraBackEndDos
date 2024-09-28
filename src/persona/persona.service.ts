@@ -78,16 +78,23 @@ export class PersonaService {
 
     async getPersonaById(id: number): Promise<Persona|null> {
         try {
-            const criterio: FindOneOptions = { 
+            const criterio: FindOneOptions<Persona> = { 
                 relations: [
                     'profeMaterias.curso', 
                     'pedidos.librosPedidos.libro',
                     'pedidos.librosPedidos.estadoPedido'
                 ],
-                where: { idPersona: id } 
+                where: { idPersona: id } ,
+                order: {
+                    pedidos: {
+                        librosPedidos: {
+                            idLibroPedido: 'DESC'
+                        } 
+                    }
+                }
             };
             const persona: Persona = await this.personaRepository.findOne(criterio);
-            return persona ||null;
+            return persona;
         } catch (error) {
             throw this.handleExceptions(error, `Error al intentar leer la persona ${id}`);
         }
