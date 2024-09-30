@@ -1,0 +1,26 @@
+body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    background-color: beige;
+}
+
+h1{
+    text-align: center;
+}
+
+p{
+    margin: 0.8rem 5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.objeto{
+    border: 1px solid black;
+    border-radius: 10px;
+    text-align: justify;
+    padding: 1rem 5rem;
+    margin: 1rem 8rem;
+    background-color: white;
+}

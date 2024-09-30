@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./index.css">
+
+  <title>API g2</title>
+
+  <style>
+    body {
+      background-color: beige;
+      font-family: Arial, sans-serif;
+      margin: 1rem 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    header {
+      text-align: center;
+      max-width: 800px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    p, h2, h3{
+      width: 100%;
+      text-align: start;
+      margin: 1rem 0;
+    }
+
+    ul {
+      list-style: none;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px auto;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+    }
+    li {
+      margin: 10px;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>BIENVENIDOS A LA API DE DELIBERYCOPY</h1>
+    <p>Esta api existe para gestionar pedidos desde la app de delibery copy en todas sus versiones</p>
+    <p>Cuenta con distintas rutas de acceso a la información tanto para crear, editar, eliminar, o leer cualquiera de sus objetos</p>
+    <h2>Rutas de acceso y formato de la información</h2>
+    <h3>libro</h3>
+    <p>El metodo GET devuelve un arreglo de objetos con la siguiente extructura</p>
+    <ul> {
+      <li>idLibro: number,</li>
+      <li>nombre: string,</li>
+      <li>descripcion: string,</li>
+      <li>edicion: string,</li>
+      <li>img: string,</li>
+      <li>cantidadPg: number,</li>
+      <li>autor: string,</li>
+      <li>deleted: boolean;</li>
+      <li>materia: { 
+        nombre: string,
+        idMateria: number,
+        deleted: boolean,
+      },</li>
+      <li>
+        stock:{
+          idStock:number,
+          cantidad:number,
+          deleted: boolean,
+          estado: {
+            estado: string,
+            idEstadoPedido: number,
+            deleted: boolean
+          },
+          especificaciones: [
+            {
+              nombre:string,
+              idEspecificaciones: number,
+              deleted:boolean
+            }
+          ],
+      };</li>
+      <li>profeMaterias: {
+        idProfeMateria:number,
+        deleted:boolean,
+        curso:{
+          idCurso:number
+          anio:date,
+          grado:string,
+          deleted:boolean
+          escuela: {
+            idEscuela:number
+            nombre:string,
+            direccion:string,
+            numero: string,
+            email:string,
+            deleted:boolean
+          }
+        }  
+      };</li>
+  }</ul>
+  <p>y otra lista de objetos dentro de "/users" con esta disposición:</p>
+  <ul>{
+    <li>id: number;</li>
+    <li>name: string;</li>
+    <li>lastName: string;</li>
+    <li>user: string;</li>
+    <li>email: string;</li>
+    <li>password: string;</li>
+    <li>age: string;</li>
+}</ul>
+<p>Cada lista tiene metodos de lectura GET y GET+id, metodos de escritura POST, de edición PUT y de eliminación DELETE.
+  También posee busqueda por Query, con cada uno de los campos en el caso de menu, y Query de user en la lista de users.
+</p>
+<p>La api se carga en el puerto localhost:3000 y la base de dato, 
+  que es un elemento json se carga en el puerto localhost:3031 con la palabra clave db</p>
+  <p>La api esta tipada con tecnología "dto" va a ignorar cualquier dato que no corresponda con los objetos anteriormente
+    mencionados, pero si falta algun campo mencionado, o esta tipado de diferente manera va a devolver un error 400. 
+    En la carga y la actualización las id de ambos objetos son ignoradas. Son generadas automaticamente por la api.
+  </p>
+  </header>
+</body>
+</html>

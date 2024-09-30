@@ -20,11 +20,17 @@ import { ProfeMateriaModule } from './profe-materia/profe-materia.module';
 import { StockModule } from './stock/stock.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client', 'index'),
+      serveRoot: '/',
+    }),
     ConfigModule.forRoot({
-      isGlobal: true, // Make the configuration globally available
+      isGlobal: true,
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -34,7 +40,7 @@ import { ConfigModule } from '@nestjs/config';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       ssl: {
-        rejectUnauthorized: false, // Asegúrate de manejar esto de acuerdo a tus necesidades de seguridad
+        rejectUnauthorized: false,
       },
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
@@ -56,7 +62,7 @@ import { ConfigModule } from '@nestjs/config';
     PreciosModule,
     ProfeMateriaModule,
     StockModule,
-    UsuarioModule
+    UsuarioModule,
   ],
   controllers: [AppController],
   providers: [AppService],
